@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('schools', function (Blueprint $table) {
             $table->id();
+             $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('address');
             $table->string('phone');
-            $table->foreignId('created_by')->constrained('users')->onDelete('restrict'); // Admin who created the school
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

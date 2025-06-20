@@ -4,27 +4,27 @@ namespace App\Http\Controllers\web\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\StudentProfile;
-use App\Models\School;
 use Illuminate\Http\Request;
-use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Throwable;
-use Exception;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
     /**
-     * Display the student management index view.
+     * Display a listing of the resource.
      */
     public function index()
     {
-
         return view('admin.students.index');
     }
 
+
     /**
-     * Provide data for DataTables AJAX request.
+     * Provide data for the DataTables AJAX request.
+     *
      */
     public function dataTable(Request $request)
     {
@@ -32,23 +32,32 @@ class StudentController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $users = User::with(['roles', 'studentProfile.school'])
-            ->whereHas('roles', fn($query) => $query->where('name', 'student'));
+        if (Auth::user()->hasRole('admin')) {
+            $students = User::with('students')->whereHas('students');
+        } else {
+            $students = User::with('students')
+                ->whereHas('students')
+                ->where("user_id", Auth::id());
+        }
 
-        return DataTables::of($users)
+        return DataTables::of($students)
             ->addIndexColumn()
             ->editColumn('created_at', fn($user) => $user->created_at->format('d M Y'))
-            ->addColumn('roles', fn($user) => $user->roles->pluck('name')->implode(', '))
-            ->addColumn('school', fn($user) => $user->studentProfile?->school?->name ?? 'N/A')
-            ->addColumn('grade_level', fn($user) => $user->studentProfile->grade_level ?? 'N/A')
-            ->addColumn('action', fn($user) => view('admin.students.action', ['user' => $user])->render())
+            ->addColumn('school_name', fn($user) => $user->user->name ?? 'N/A')
+            ->addColumn('phone', fn($user) => optional($user->students->first())->phone ?? 'N/A')
+            ->addColumn('dob', fn($user) => optional($user->students->first())->dob?->format('d M Y') ?? 'N/A')
+            ->addColumn('gender', fn($user) => optional($user->students->first())->gender ?? 'N/A')
+            ->addColumn('address', fn($user) => optional($user->students->first())->address ?? 'N/A')
+            ->addColumn('parent_phone', fn($user) => optional($user->students->first())->parent_phone ?? 'N/A')
+            ->addColumn('emergency_contact', fn($user) => optional($user->students->first())->emergency_contact ?? 'N/A')
+            ->addColumn('grade_level', fn($user) => optional($user->students->first())->grade_level ?? 'N/A')
+            ->addColumn('action', fn($user) => view('admin.students.action', ['student' => $user])->render())
             ->rawColumns(['action'])
             ->make(true);
     }
 
-
     /**
-     * Show form for creating a new student.
+     * Show the form for creating a new resource.
      */
     public function create()
     {
@@ -56,160 +65,141 @@ class StudentController extends Controller
     }
 
     /**
-     * Store a newly created student.
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name'            => ['required', 'string', 'max:255'],
-            'email'           => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password'        => ['required', 'string', 'min:8', 'confirmed'],
-            'school_id'       => ['required', 'exists:schools,id'],
-            'phone'           => ['nullable', 'string', 'max:20'],
-            'dob'             => ['required', 'date', 'before:today'],
-            'gender'          => ['required', 'in:male,female,other'],
-            'address'         => ['nullable', 'string', 'max:255'],
-            'parent_phone'    => ['nullable', 'string', 'max:20'],
-            'emergency_contact' => ['nullable', 'string', 'max:255'],
-            'grade_level'     => ['required', 'string', 'max:50'],
+        // Validate the request
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'dob' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'parent_phone' => ['nullable', 'string', 'max:20'],
+            'emergency_contact' => ['nullable', 'string', 'max:20'],
+            'grade_level' => ['nullable', 'string', 'max:50'],
         ]);
 
         try {
-            // Create user with student role
-            $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => Hash::make($request->password),
-                'slug'     => \Illuminate\Support\Str::slug($request->name . '-' . \Illuminate\Support\Str::random(5)),
-            ]);
-            $user->assignRole('student');
+            DB::beginTransaction();
 
-            // Create related student profile
-            StudentProfile::create([
-                'user_id'          => $user->id,
-                'school_id'        => $request->school_id,
-                'phone'            => $request->phone,
-                'dob'              => $request->dob,
-                'gender'           => $request->gender,
-                'address'          => $request->address,
-                'parent_phone'     => $request->parent_phone,
-                'emergency_contact' => $request->emergency_contact,
-                'grade_level'      => $request->grade_level,
+            // Create the user
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'slug' => Str::slug($validated['name'] . '-' . Str::random(6)), // Unique slug
+                'user_id' => Auth::id(), // Set creator as the authenticated user
             ]);
+
+            // Create the associated student record
+            $user->students()->create([
+                'user_id' => $user->id,
+                'phone' => $validated['phone'] ?? null,
+                'dob' => $validated['dob'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'parent_phone' => $validated['parent_phone'] ?? null,
+                'emergency_contact' => $validated['emergency_contact'] ?? null,
+                'grade_level' => $validated['grade_level'] ?? null,
+            ]);
+
+            DB::commit();
 
             return redirect()->route('admin.students.index')->with('success', 'Student created successfully.');
-        } catch (Throwable $th) {
-            return back()->withInput()->with('error', 'Failed to create student: ' . $th->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->withInput()->with('error', 'Something went wrong. Please try again. Error: ' . $e->getMessage());
         }
     }
 
     /**
-     * Display specified student.
+     * Display the specified resource.
      */
     public function show($slug)
     {
-        try {
-            $user = User::with('studentProfile.school')->where('slug', $slug)->firstOrFail();
-            return view('admin.students.show', compact('user'));
-        } catch (Exception $e) {
-            return back()->with('error', 'Student not found.');
-        }
+        $student = User::with('student')->where('slug', $slug)->firstOrFail();
+        return view('admin.students.show', compact('student'));
     }
 
     /**
-     * Show form for editing specified student.
+     * Show the form for editing the specified resource.
      */
-    public function edit($slug)
+    public function edit(string $slug)
     {
-        try {
-             $user = User::with('studentProfile.school')->where('slug', $slug)->firstOrFail();
-            return view('admin.students.edit', compact('user'));
-        } catch (Exception $e) {
-            return back()->with('error', 'Student not found.');
-        }
+        $student = User::with('student')->where('slug', $slug)->firstOrFail();
+        return view('admin.students.edit', compact('student'));
     }
 
     /**
-     * Update the specified student.
+     * Update the specified resource in storage.
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, string $slug)
     {
+        $student = User::with('student')->where('slug', $slug)->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $student->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'dob' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'parent_phone' => ['nullable', 'string', 'max:20'],
+            'emergency_contact' => ['nullable', 'string', 'max:20'],
+            'grade_level' => ['nullable', 'string', 'max:50'],
+        ]);
+
         try {
-            $user = User::with('studentProfile')->where('slug', $slug)->firstOrFail();
+            DB::beginTransaction();
 
-            $request->validate([
-                'name'            => ['required', 'string', 'max:255'],
-                'email'           => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-                'password'        => ['nullable', 'string', 'min:8', 'confirmed'],
-                'school_id'       => ['required', 'exists:schools,id'],
-                'phone'           => ['nullable', 'string', 'max:20'],
-                'dob'             => ['required', 'date', 'before:today'],
-                'gender'          => ['required', 'in:male,female,other'],
-                'address'         => ['nullable', 'string', 'max:255'],
-                'parent_phone'    => ['nullable', 'string', 'max:20'],
-                'emergency_contact' => ['nullable', 'string', 'max:255'],
-                'grade_level'     => ['required', 'string', 'max:50'],
+            // Update User
+            $student->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => isset($validated['password']) ? Hash::make($validated['password']) : $student->password,
+                'slug' => $student->slug, // Preserve existing slug
             ]);
 
-            $user->update([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'password' => $request->filled('password') ? Hash::make($request->password) : $user->password,
-            ]);
+            // Update or Create the student record
+            $student->students()->updateOrCreate(
+                ['user_id' => $student->id],
+                [
+                    'phone' => $validated['phone'] ?? null,
+                    'dob' => $validated['dob'] ?? null,
+                    'gender' => $validated['gender'] ?? null,
+                    'address' => $validated['address'] ?? null,
+                    'parent_phone' => $validated['parent_phone'] ?? null,
+                    'emergency_contact' => $validated['emergency_contact'] ?? null,
+                    'grade_level' => $validated['grade_level'] ?? null,
+                ]
+            );
 
-            $user->syncRoles('student');
-
-            $user->studentProfile->update([
-                'school_id'        => $request->school_id,
-                'phone'            => $request->phone,
-                'dob'              => $request->dob,
-                'gender'           => $request->gender,
-                'address'          => $request->address,
-                'parent_phone'     => $request->parent_phone,
-                'emergency_contact' => $request->emergency_contact,
-                'grade_level'      => $request->grade_level,
-            ]);
+            DB::commit();
 
             return redirect()->route('admin.students.index')->with('success', 'Student updated successfully.');
-        } catch (Exception $e) {
-            return back()->withInput()->with('error', 'Student not found.');
-        } catch (Throwable $th) {
-            return back()->withInput()->with('error', 'Failed to update student: ' . $th->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()->with('error', 'Something went wrong. ' . $e->getMessage());
         }
     }
 
     /**
-     * Remove the specified student.
+     * Remove the specified resource from storage.
      */
     public function destroy($slug)
     {
-        try {
-            $user = User::where('slug', $slug)->firstOrFail();
+        $user = User::where('slug', $slug)->firstOrFail();
+        $user->delete();
 
-            if ($user->medicalReports()->count() > 0) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Cannot delete student because they have associated medical reports.'
-                ], 422);
-            }
-
-            $user->studentProfile()->delete();
-            $user->delete();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Student deleted successfully.'
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Student not found.'
-            ], 404);
-        } catch (Throwable $th) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to delete student: ' . $th->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Student deleted successfully.'
+        ]);
     }
 }

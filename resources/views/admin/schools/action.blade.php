@@ -1,5 +1,5 @@
 @php
-    $schoolAdmin = $school->schoolAdmins->first();
+    $schoolAdmin = $school->admin;
 @endphp
 
 <a href="{{ route('admin.schools.show', $schoolAdmin?->slug) }}" class="btn btn-sm btn-info">View</a>

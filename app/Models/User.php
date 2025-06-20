@@ -13,13 +13,14 @@ use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens, HasRoles, SoftDeletes;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     protected $fillable = [
         'slug',
         'name',
         'email',
         'password',
+        'user_id'
     ];
 
     protected $hidden = [
@@ -32,45 +33,22 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * The schools this user is assigned to (as school admin or student).
-     */
-    public function schools()
+    // Relationship with school
+    public function school()
     {
-        return $this->belongsToMany(School::class, 'school_user')
-            ->withTimestamps();
+        return $this->hasOne(School::class, 'user_id');
     }
 
-    /**
-     * Student profile (only for student users).
-     */
-    public function studentProfile()
+    // Relationship with student
+    public function students()
     {
-        return $this->hasOne(StudentProfile::class, 'user_id');
+        return $this->hasMany(Student::class, 'user_id');
     }
 
 
-    /**
-     * Medical reports belonging to this student.
-     */
-    public function medicalReports()
+    // Relationship with user
+    public function user()
     {
-        return $this->hasMany(MedicalReport::class, 'student_id');
-    }
-
-    /**
-     * Medical reports uploaded by this user (school admin or student).
-     */
-    public function uploadedMedicalReports()
-    {
-        return $this->hasMany(MedicalReport::class, 'uploaded_by');
-    }
-
-    /**
-     * Schools created by the user (only for admins).
-     */
-    public function createdSchools()
-    {
-        return $this->hasMany(School::class, 'created_by');
+        return $this->belongsTo(User::class);
     }
 }

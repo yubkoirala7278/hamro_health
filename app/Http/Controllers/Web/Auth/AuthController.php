@@ -50,4 +50,15 @@ class AuthController extends Controller
             return back()->with('error', $th->getMessage());
         }
     }
+
+    // web logout
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success',"logout success!");
+    }
 }

@@ -11,17 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_profiles', function (Blueprint $table) {
+        Schema::create('students', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')
-                ->constrained('users')
-                ->onDelete('cascade');
-
-            $table->unsignedBigInteger('school_id');
-            $table->foreign('school_id', 'student_profiles_school_id_foreign')
-                ->references('id')->on('schools')
-                ->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete()->cascadeOnUpdate();
 
             $table->string('phone')->nullable();
             $table->date('dob')->nullable();
@@ -32,7 +26,6 @@ return new class extends Migration
             $table->string('grade_level')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -41,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_profiles');
+        Schema::dropIfExists('students');
     }
 };

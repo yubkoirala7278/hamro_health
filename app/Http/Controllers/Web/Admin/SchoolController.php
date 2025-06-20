@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\School;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
@@ -20,7 +21,6 @@ class SchoolController extends Controller
     /**
      * Display the school management index view.
      *
-     * @return \Illuminate\View\View
      */
     public function index()
     {
@@ -30,8 +30,6 @@ class SchoolController extends Controller
     /**
      * Provide data for the DataTables AJAX request.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Yajra\DataTables\DataTableAbstract
      */
     public function dataTable(Request $request)
     {
@@ -39,19 +37,24 @@ class SchoolController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $schools = School::with(['schoolAdmins', 'createdBy'])
-            ->select(['id', 'address', 'phone', 'created_by', 'created_at']);
+        $schools = School::with('admin');
 
         return DataTables::of($schools)
             ->addIndexColumn()
-            ->editColumn('created_at', fn ($school) => $school->created_at->format('d M Y'))
-            ->addColumn('school_admin', fn ($school) =>
-                $school->schoolAdmins->isEmpty() ? 'N/A' : $school->schoolAdmins->pluck('name')->implode(', ')
+            ->editColumn('created_at', fn($school) => $school->created_at->format('d M Y'))
+            ->addColumn(
+                'school_admin',
+                fn($school) =>
+                optional($school->admin)->name ?? 'N/A'
             )
-            ->addColumn('school_email', fn ($school) =>
-                $school->schoolAdmins->pluck('email')->implode(', ')
+            ->addColumn(
+                'school_email',
+                fn($school) =>
+                optional($school->admin)->email ?? 'N/A'
             )
-            ->addColumn('action', fn ($school) =>
+            ->addColumn(
+                'action',
+                fn($school) =>
                 view('admin.schools.action', ['school' => $school])->render()
             )
             ->rawColumns(['action'])
@@ -97,12 +100,11 @@ class SchoolController extends Controller
             $user->assignRole('school_admin');
 
             $school = School::create([
+                'user_id' => $user->id,
                 'address' => $request->address,
                 'phone' => $request->phone,
                 'created_by' => Auth::id(),
             ]);
-
-            $school->schoolAdmins()->attach($user->id);
 
             DB::commit();
 
@@ -113,6 +115,7 @@ class SchoolController extends Controller
         }
     }
 
+
     /**
      * Display the specified school.
      *
@@ -122,14 +125,13 @@ class SchoolController extends Controller
     public function show($slug)
     {
         try {
-            $school = School::whereHas('schoolAdmins', fn($query) => $query->where('slug', $slug))
-                ->with(['schoolAdmins', 'createdBy'])
-                ->firstOrFail();
+            $school = User::with('school')->where('slug', $slug)->firstOrFail();
             return view('admin.schools.show', compact('school'));
         } catch (\Exception $e) {
             return back()->with('error', 'School not found.');
         }
     }
+
 
     /**
      * Show the form for editing the specified school.
@@ -140,11 +142,8 @@ class SchoolController extends Controller
     public function edit($slug)
     {
         try {
-            $school = School::whereHas('schoolAdmins', fn($query) => $query->where('slug', $slug))
-                ->with(['schoolAdmins'])
-                ->firstOrFail();
-            $schoolAdmin = $school->schoolAdmins->first();
-            return view('admin.schools.edit', compact('school', 'schoolAdmin'));
+            $school = User::with('school')->where('slug', $slug)->firstOrFail();
+            return view('admin.schools.edit', compact('school'));
         } catch (\Exception $e) {
             return back()->with('error', 'School not found.');
         }
@@ -159,37 +158,28 @@ class SchoolController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $school = School::whereHas('schoolAdmins', fn($query) => $query->where('slug', $slug))
-            ->with(['schoolAdmins'])
-            ->firstOrFail();
+        $user = User::with('school')->where('slug', $slug)->firstOrFail();
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . ($school->schoolAdmins->first()->id ?? 0)],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            $schoolAdmin = $school->schoolAdmins->first();
-
-            if (!$schoolAdmin) {
-                throw new \Exception('No school admin found for this school.');
-            }
-
-            $schoolAdmin->update([
+            // Update User (admin) fields
+            $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
-                'slug' => \Illuminate\Support\Str::slug($request->name . '-' . \Illuminate\Support\Str::random(5)),
-                'password' => $request->filled('password') ? Hash::make($request->password) : $schoolAdmin->password,
+                'password' => $request->password ? Hash::make($request->password) : $user->password,
             ]);
 
-            $schoolAdmin->syncRoles('school_admin');
-
-            $school->update([
+            // Update School fields
+            $user->school->update([
                 'address' => $request->address,
                 'phone' => $request->phone,
             ]);
@@ -203,6 +193,7 @@ class SchoolController extends Controller
         }
     }
 
+
     /**
      * Remove the specified school from storage.
      *
@@ -212,24 +203,18 @@ class SchoolController extends Controller
     public function destroy($slug)
     {
         try {
-            $school = School::whereHas('schoolAdmins', fn($query) => $query->where('slug', $slug))
-                ->firstOrFail();
+            $school = User::where('slug', $slug)->first();
+            $students = User::where('user_id',$school->id)->get();
 
-            if ($school->students()->count() > 0) {
+            // Check if the school has students
+            if ($students->isNotEmpty()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Cannot delete school because it has associated students.'
                 ], 422);
             }
 
-            if ($school->medicalReports()->count() > 0) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Cannot delete school because it has associated medical reports.'
-                ], 422);
-            }
-
-            $school->schoolAdmins()->detach();
+            // Delete the school
             $school->delete();
 
             return response()->json([

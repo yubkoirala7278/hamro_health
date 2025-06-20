@@ -16,7 +16,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !Auth::user()->hasRole("admin")) {
+        if (!Auth::check()) {
             return redirect()->route('home')->with('error', 'Please login to access this page');
         }
         return $next($request);

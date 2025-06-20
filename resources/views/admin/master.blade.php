@@ -21,7 +21,7 @@
     @yield('header-content')
     {{-- toastify --}}
     @toastifyCss
-     {{-- sweet alert 2 --}}
+    {{-- sweet alert 2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
@@ -216,7 +216,7 @@
                             aria-expanded="false">
                             <img class="rounded-circle header-profile-user" src="/assets/images/users/avatar-1.jpg"
                                 alt="Header Avatar">
-                            <span class="d-none d-xl-inline-block ms-1 fw-medium">Shawn L.</span>
+                            <span class="d-none d-xl-inline-block ms-1 fw-medium">{{ Auth::user()->name }}</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -226,8 +226,15 @@
                             <a class="dropdown-item" href="auth-lock-screen.html"><i
                                     class="mdi mdi-lock font-size-16 align-middle me-1"></i> Lock Screen</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="auth-logout.html"><i
-                                    class="mdi mdi-logout font-size-16 align-middle me-1"></i> Logout</a>
+                            <a class="dropdown-item" href="#"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="mdi mdi-logout font-size-16 align-middle me-1"></i> Logout
+                            </a>
+
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+
                         </div>
                     </div>
 
@@ -247,27 +254,31 @@
                         <li class="menu-title" data-key="t-menu">Menu</li>
 
                         <li>
-                            <a href="{{route('admin.home')}}">
+                            <a href="{{ route('admin.home') }}">
                                 <i data-feather="home"></i>
                                 <span data-key="t-dashboard">Dashboard</span>
                             </a>
                         </li>
 
-                         <li>
-                            <a href="{{route('admin.schools.index')}}">
-                                <i data-feather="layers"></i>
+                        @role('admin')
+                            <li>
+                                <a href="{{ route('admin.schools.index') }}">
+                                    <i data-feather="layers"></i>
+                                    <span data-key="t-dashboard">School Management</span>
+                                </a>
+                            </li>
+                        @endrole
 
-                                <span data-key="t-dashboard">School Management</span>
-                            </a>
-                        </li>
 
-                         <li>
-                            <a href="{{route('admin.students.index')}}">
-                               <i data-feather="user"></i>
+                        {{-- @role('school_admin') --}}
+                            <li>
+                                <a href="{{ route('admin.students.index') }}">
+                                    <i data-feather="user"></i>
 
-                                <span data-key="t-dashboard">Student Management</span>
-                            </a>
-                        </li>
+                                    <span data-key="t-dashboard">Student Management</span>
+                                </a>
+                            </li>
+                        {{-- @endrole --}}
                     </ul>
                 </div>
                 <!-- Sidebar -->
