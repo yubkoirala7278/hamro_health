@@ -6,7 +6,9 @@ use App\Http\Controllers\Web\Admin\SchoolController;
 use App\Http\Controllers\web\admin\StudentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+Route::get('/home', [HomeController::class, 'redirectBasedOnRole'])->name('home');
+
 
 // school
 Route::middleware(['role:admin'])->group(function () {
