@@ -25,4 +25,9 @@ class Student extends Model
     {
         return $this->belongsTo(School::class);
     }
+
+    public function medicalReports()
+    {
+        return $this->hasMany(MedicalReport::class, 'student_id');
+    }
 }

@@ -14,82 +14,57 @@ class MedicalReport extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
         'student_id',
-        'school_id',
-        'uploaded_by',
-        'title',
-        'description',
-        'file_path',
-        'checkup_date',
-        'report_type',
+        'created_by',
+        'report_date',
+        'medical_condition',
+        'allergies',
+        'medications',
+        'vaccinations',
+        'notes',
+        'doctor_name',
+        'doctor_contact',
+        'specialist',
+        'mnc_number',
+        'blood_pressure',
+        'pulse_rate',
+        'temperature',
+        'respiratory_rate',
+        'oxygen_saturation',
+        'report_file',
         'status',
     ];
 
     /**
      * The attributes that should be cast.
      *
-     * @var array<string, string>
+     * @var array
      */
     protected $casts = [
-        'checkup_date' => 'date',
+        'report_date' => 'date',
     ];
 
     /**
-     * Get the student associated with the medical report.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Get the student that owns the medical report.
      */
     public function student()
     {
-        return $this->belongsTo(User::class, 'student_id');
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
     /**
-     * Get the school associated with the medical report.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Get the user who created the medical report.
      */
-    public function school()
+    public function creator()
     {
-        return $this->belongsTo(School::class, 'school_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Get the user who uploaded the medical report (school_admin).
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function uploadedBy()
+    public function getReportFileUrlAttribute()
     {
-        return $this->belongsTo(User::class, 'uploaded_by');
-    }
-
-    /**
-     * Get the full URL for the file path.
-     *
-     * @return string|null
-     */
-    public function getFileUrlAttribute(): ?string
-    {
-        return $this->file_path ? Storage::url($this->file_path) : null;
-    }
-
-    /**
-     * Scope to filter medical reports by school admin's school.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param \App\Models\User $schoolAdmin
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeForSchoolAdmin($query, User $schoolAdmin)
-    {
-        return $query->whereHas('school', function ($q) use ($schoolAdmin) {
-            $q->whereHas('schoolAdmins', function ($q) use ($schoolAdmin) {
-                $q->where('users.id', $schoolAdmin->id);
-            });
-        });
+        return $this->report_file ? Storage::url($this->report_file) : null;
     }
 }
