@@ -15,8 +15,12 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4>Student Management</h4>
-            <a href="{{ route('admin.students.create') }}" class="btn btn-primary">Add New Student</a>
+            @if (Auth::user()->hasRole('school_admin'))
+                <a href="{{ route('admin.students.create') }}" class="btn btn-primary">Add New Student</a>
+            @endif
         </div>
+
+
         <div class="card-body table-responsive">
             <table id="students-table" class="table table-bordered table-hover">
                 <thead>
@@ -55,22 +59,66 @@
                 serverSide: true,
                 searchDelay: 1000,
                 ajax: '{{ route('admin.students.dataTable') }}',
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    { data: 'name', name: 'name' },
-                    { data: 'email', name: 'email' },
-                    { data: 'phone', name: 'phone' },
-                    { data: 'dob', name: 'dob' },
-                    { data: 'gender', name: 'gender' },
-                    { data: 'address', name: 'address' },
-                    { data: 'parent_phone', name: 'parent_phone' },
-                    { data: 'emergency_contact', name: 'emergency_contact' },
-                    { data: 'grade_level', name: 'grade_level' },
-                    { data: 'school_name', name: 'school_name' },
-                    { data: 'created_at', name: 'created_at' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'email',
+                        name: 'email'
+                    },
+                    {
+                        data: 'phone',
+                        name: 'phone'
+                    },
+                    {
+                        data: 'dob',
+                        name: 'dob'
+                    },
+                    {
+                        data: 'gender',
+                        name: 'gender'
+                    },
+                    {
+                        data: 'address',
+                        name: 'address'
+                    },
+                    {
+                        data: 'parent_phone',
+                        name: 'parent_phone'
+                    },
+                    {
+                        data: 'emergency_contact',
+                        name: 'emergency_contact'
+                    },
+                    {
+                        data: 'grade_level',
+                        name: 'grade_level'
+                    },
+                    {
+                        data: 'school_name',
+                        name: 'school_name'
+                    },
+                    {
+                        data: 'created_at',
+                        name: 'created_at'
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    }
                 ],
-                order: [[10, 'desc']],
+                order: [
+                    [10, 'desc']
+                ],
                 pageLength: 10,
             });
 

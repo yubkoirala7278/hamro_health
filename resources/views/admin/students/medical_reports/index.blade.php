@@ -21,8 +21,10 @@
             <h4>Medical Reports for {{ $student->name }}</h4>
             <div>
                 <a href="{{ route('admin.students.show', $student->slug) }}" class="btn btn-secondary">Back to Student</a>
+                @if (Auth::user()->hasRole('school_admin'))
                 <a href="{{ route('admin.students.medical_reports.create', $student->slug) }}" class="btn btn-primary">Add
                     New Medical Report</a>
+                    @endif
             </div>
         </div>
         <div class="card-body table-responsive">
