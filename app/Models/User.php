@@ -10,6 +10,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Str;
+use App\Exceptions\PhoneNumberException;
+use Illuminate\Support\Facades\Http;
 
 class User extends Authenticatable
 {
@@ -20,7 +22,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'user_id'
+        'user_id',
+        'phone_number',
+        'otp_created_at',
+        'otp_code',
+        'otp_attempts',
+        'phone_number_verified_at'
     ];
 
     protected $hidden = [
@@ -31,6 +38,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'otp_created_at'           => 'datetime',
+        'phone_number_verified_at' => 'datetime',
     ];
 
     // Relationship with school
@@ -56,5 +65,34 @@ class User extends Authenticatable
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+
+
+    /**
+     * Sends SMS for phone number verification to user.
+     *
+     * @return void
+     *
+     * @throws PhoneNumberException
+     * @throws \JsonException
+     */
+    public function sendPhoneVerificationSms(): void
+    {
+        $url = config('sms.url');
+        $data = [
+            'token' => config('sms.token'),
+            'from'  => config('sms.from'),
+            'to'    => $this->phone_number,
+            'text'  => "The OTP generated is {$this->otp_code}. The code will expire in 30 minutes.",
+        ];
+
+        $response = Http::post($url, $data);
+
+        if (!$response->successful()) {
+            $response = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
+
+            throw new PhoneNumberException($response['response']);
+        }
     }
 }

@@ -20,6 +20,15 @@ return new class extends Migration
             $table->string('email')->unique()->index();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            // phone number
+            $table->string('phone_number')->nullable();
+            $table->timestamp('otp_created_at')->nullable();
+            $table->integer('otp_code')->nullable();
+            $table->integer('otp_attempts')->default(0);
+            $table->timestamp('phone_number_verified_at')->nullable();
+
+            
             $table->rememberToken();
             $table->timestamps();
         });
