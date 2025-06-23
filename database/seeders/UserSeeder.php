@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
         // Create system admin
         $admin = User::factory()->create([
             'name' => 'System Admin',
-            'email' => 'admin@example.com',
+            'email' => 'admin@admin.com',
             'password' => bcrypt('password'),
             'slug' => Str::slug('System Admin'),
         ]);
