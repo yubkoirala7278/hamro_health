@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\web\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +95,14 @@ class StudentController extends Controller
                 'slug' => Str::slug($validated['name'] . '-' . Str::random(6)), // Unique slug
                 'user_id' => Auth::id(), // Set creator as the authenticated user
             ]);
+            $user->assignRole('student');
+
+            // Create conversation
+            Conversation::create([
+                'school_admin_id' => Auth::id(),
+                'student_id' => $user->id,
+                'last_message_at' => null,
+            ]);
 
             // Create the associated student record
             $user->students()->create([
@@ -165,6 +174,9 @@ class StudentController extends Controller
                 'password' => isset($validated['password']) ? Hash::make($validated['password']) : $student->password,
                 'slug' => $student->slug, // Preserve existing slug
             ]);
+            $student->assignRole('student');
+
+
 
             // Update or Create the student record
             $student->students()->updateOrCreate(

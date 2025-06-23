@@ -42,11 +42,11 @@
                     <div class="navbar-brand-box">
                         <a href="index.html" class="logo logo-dark">
                             <span class="logo-sm">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24">
+                                <img src="{{asset('logo.png')}}" alt="" height="24">
                             </span>
                             <span class="logo-lg">
-                                <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span
-                                    class="logo-txt">Minia</span>
+                                <img src="{{asset('logo.png')}}" alt="" height="24"> <span
+                                    class="logo-txt">Hamro Health</span>
                             </span>
                         </a>
 
@@ -56,7 +56,7 @@
                             </span>
                             <span class="logo-lg">
                                 <img src="/assets/images/logo-sm.svg" alt="" height="24"> <span
-                                    class="logo-txt">Minia</span>
+                                    class="logo-txt">Hamro Health</span>
                             </span>
                         </a>
                     </div>
@@ -106,7 +106,7 @@
                         </button>
                     </div>
 
-                    <div class="dropdown d-inline-block">
+                    {{-- <div class="dropdown d-inline-block">
                         <button type="button" class="btn header-item noti-icon position-relative"
                             id="page-header-notifications-dropdown" data-bs-toggle="dropdown" aria-haspopup="true"
                             aria-expanded="false">
@@ -202,7 +202,7 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     {{-- <div class="dropdown d-inline-block">
                             <button type="button" class="btn header-item right-bar-toggle me-2">
@@ -214,17 +214,15 @@
                         <button type="button" class="btn header-item bg-light-subtle border-start border-end"
                             id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true"
                             aria-expanded="false">
-                            <img class="rounded-circle header-profile-user" src="/assets/images/users/avatar-1.jpg"
+                            <img class="rounded-circle header-profile-user" src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?semt=ais_hybrid&w=740"
                                 alt="Header Avatar">
                             <span class="d-none d-xl-inline-block ms-1 fw-medium">{{ Auth::user()->name }}</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
                             <!-- item-->
-                            <a class="dropdown-item" href="apps-contacts-profile.html"><i
-                                    class="mdi mdi mdi-face-man font-size-16 align-middle me-1"></i> Profile</a>
-                            <a class="dropdown-item" href="auth-lock-screen.html"><i
-                                    class="mdi mdi-lock font-size-16 align-middle me-1"></i> Lock Screen</a>
+                            {{-- <a class="dropdown-item" href="apps-contacts-profile.html"><i
+                                    class="mdi mdi mdi-face-man font-size-16 align-middle me-1"></i> Profile</a> --}}
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -279,6 +277,16 @@
                                 </a>
                             </li>
                         {{-- @endrole --}}
+
+                         @role('school_admin')
+                            <li>
+                                <a href="{{ route('chat.index') }}">
+                                    <i data-feather="user"></i>
+
+                                    <span data-key="t-dashboard">Chatting</span>
+                                </a>
+                            </li>
+                        @endrole
                     </ul>
                 </div>
                 <!-- Sidebar -->

@@ -4,7 +4,7 @@
 <head>
 
     <meta charset="utf-8" />
-    <title>Login | Minia - Minimal Admin & Dashboard Template</title>
+    <title>Login | Hamro Health</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesbrand" name="author" />
@@ -35,7 +35,7 @@
                             <div class="d-flex flex-column h-100">
                                 <div class="mb-4 mb-md-5 text-center">
                                     <a href="index.html" class="d-block auth-logo">
-                                        <img src="/assets/images/logo-sm.svg" alt="" height="28"> <span
+                                        <img src="{{ asset('logo.png') }}" alt="" height="28"> <span
                                             class="logo-txt">Hamro Health</span>
                                     </a>
                                 </div>
@@ -51,9 +51,8 @@
                                         <div class="mb-3">
                                             <label for="email" class="form-label">Email</label>
                                             <input type="email"
-                                                class="form-control @error('email') is-invalid @enderror"
-                                                id="email" name="email" value="{{ old('email') }}"
-                                                placeholder="Enter Email">
+                                                class="form-control @error('email') is-invalid @enderror" id="email"
+                                                name="email" value="{{ old('email') }}" placeholder="Enter Email">
                                             @error('email')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -142,8 +141,6 @@
                                                 aria-label="Slide 1"></button>
                                             <button type="button" data-bs-target="#reviewcarouselIndicators"
                                                 data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                            <button type="button" data-bs-target="#reviewcarouselIndicators"
-                                                data-bs-slide-to="2" aria-label="Slide 3"></button>
                                         </div>
                                         <!-- end carouselIndicators -->
                                         <div class="carousel-inner">
@@ -151,82 +148,53 @@
                                                 <div class="testi-contain text-white">
                                                     <i class="bx bxs-quote-alt-left text-success display-6"></i>
 
-                                                    <h4 class="mt-4 fw-medium lh-base text-white">“I feel confident
-                                                        imposing change
-                                                        on myself. It's a lot more progressing fun than looking back.
-                                                        That's why
-                                                        I ultricies enim
-                                                        at malesuada nibh diam on tortor neaded to throw curve balls.”
+                                                    <h4 class="mt-4 fw-medium lh-base text-white">
+                                                        “Thanks to Hamro Health, I can easily track my child's medical
+                                                        reports and health updates from school. It's reassuring to stay
+                                                        informed and connected as a parent.”
                                                     </h4>
                                                     <div class="mt-4 pt-3 pb-5">
                                                         <div class="d-flex align-items-start">
                                                             <div class="flex-shrink-0">
-                                                                <img src="/assets/images/users/avatar-1.jpg"
+                                                                <img src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?semt=ais_hybrid&w=740"
                                                                     class="avatar-md img-fluid rounded-circle"
-                                                                    alt="...">
+                                                                    alt="Parent Avatar">
                                                             </div>
                                                             <div class="flex-grow-1 ms-3 mb-4">
-                                                                <h5 class="font-size-18 text-white">Richard Drews
-                                                                </h5>
-                                                                <p class="mb-0 text-white-50">Web Designer</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="carousel-item">
-                                                <div class="testi-contain text-white">
-                                                    <i class="bx bxs-quote-alt-left text-success display-6"></i>
-
-                                                    <h4 class="mt-4 fw-medium lh-base text-white">“Our task must be to
-                                                        free ourselves by widening our circle of compassion to embrace
-                                                        all living
-                                                        creatures and
-                                                        the whole of quis consectetur nunc sit amet semper justo. nature
-                                                        and its beauty.”</h4>
-                                                    <div class="mt-4 pt-3 pb-5">
-                                                        <div class="d-flex align-items-start">
-                                                            <div class="flex-shrink-0">
-                                                                <img src="/assets/images/users/avatar-2.jpg"
-                                                                    class="avatar-md img-fluid rounded-circle"
-                                                                    alt="...">
-                                                            </div>
-                                                            <div class="flex-grow-1 ms-3 mb-4">
-                                                                <h5 class="font-size-18 text-white">Rosanna French
-                                                                </h5>
-                                                                <p class="mb-0 text-white-50">Web Developer</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="carousel-item">
-                                                <div class="testi-contain text-white">
-                                                    <i class="bx bxs-quote-alt-left text-success display-6"></i>
-
-                                                    <h4 class="mt-4 fw-medium lh-base text-white">“I've learned that
-                                                        people will forget what you said, people will forget what you
-                                                        did,
-                                                        but people will never forget
-                                                        how donec in efficitur lectus, nec lobortis metus you made them
-                                                        feel.”</h4>
-                                                    <div class="mt-4 pt-3 pb-5">
-                                                        <div class="d-flex align-items-start">
-                                                            <img src="/assets/images/users/avatar-3.jpg"
-                                                                class="avatar-md img-fluid rounded-circle"
-                                                                alt="...">
-                                                            <div class="flex-1 ms-3 mb-4">
-                                                                <h5 class="font-size-18 text-white">Ilse R. Eaton</h5>
-                                                                <p class="mb-0 text-white-50">Manager
+                                                                <h5 class="font-size-18 text-white">Aarati Sharma</h5>
+                                                                <p class="mb-0 text-white-50">Parent of Grade 6 Student
                                                                 </p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div class="carousel-item">
+                                                <div class="testi-contain text-white">
+                                                    <i class="bx bxs-quote-alt-left text-success display-6"></i>
+
+                                                    <h4 class="mt-4 fw-medium lh-base text-white">
+                                                        “Hamro Health has made it so simple for our school to maintain
+                                                        and share students’ health records securely. It’s a smart step
+                                                        towards student well-being.”
+                                                    </h4>
+                                                    <div class="mt-4 pt-3 pb-5">
+                                                        <div class="d-flex align-items-start">
+                                                            <img src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?semt=ais_hybrid&w=740"
+                                                                class="avatar-md img-fluid rounded-circle"
+                                                                alt="Teacher Avatar">
+                                                            <div class="flex-grow-1 ms-3 mb-4">
+                                                                <h5 class="font-size-18 text-white">Ramesh K. Thapa
+                                                                </h5>
+                                                                <p class="mb-0 text-white-50">School Nurse</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+
                                         <!-- end carousel-inner -->
                                     </div>
                                     <!-- end review carousel -->

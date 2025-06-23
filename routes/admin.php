@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\web\admin\ChatController;
 use App\Http\Controllers\Web\Admin\HomeController;
 use App\Http\Controllers\web\admin\MedicalReportController;
 use App\Http\Controllers\Web\Admin\SchoolController;
@@ -34,3 +35,4 @@ Route::prefix('/students/{slug}/medical-reports')->group(function () {
     Route::put('/{id}', [MedicalReportController::class, 'medicalReportsUpdate'])->name('students.medical_reports.update');
     Route::delete('/{id}', [MedicalReportController::class, 'medicalReportsDestroy'])->name('students.medical_reports.destroy');
 });
+

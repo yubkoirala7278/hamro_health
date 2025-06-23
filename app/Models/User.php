@@ -95,4 +95,31 @@ class User extends Authenticatable
             throw new PhoneNumberException($response['response']);
         }
     }
+
+
+    // test
+    public function createdUsers()
+    {
+        return $this->hasMany(User::class, 'user_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function schoolAdminConversations()
+    {
+        return $this->hasMany(Conversation::class, 'school_admin_id');
+    }
+
+    public function studentConversations()
+    {
+        return $this->hasMany(Conversation::class, 'student_id');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
 }
