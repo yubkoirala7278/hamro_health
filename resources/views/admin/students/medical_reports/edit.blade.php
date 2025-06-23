@@ -95,7 +95,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="mnc_number" class="form-label">MNC Number</label>
+                            <label for="mnc_number" class="form-label">NMC Number</label>
                             <input type="text" name="mnc_number" id="mnc_number" class="form-control" value="{{ old('mnc_number', $report->mnc_number) }}">
                             @error('mnc_number') <div class="text-danger">{{ $message }}</div> @enderror
                         </div>

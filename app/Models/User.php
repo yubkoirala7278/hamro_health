@@ -97,7 +97,7 @@ class User extends Authenticatable
     }
 
 
-    // test
+    // Relationship
     public function createdUsers()
     {
         return $this->hasMany(User::class, 'user_id');

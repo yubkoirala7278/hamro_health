@@ -47,7 +47,7 @@
                             <dt class="col-sm-5 fw-medium text-dark">Specialist</dt>
                             <dd class="col-sm-7 text-dark">{{ $report->specialist ?? 'N/A' }}</dd>
 
-                            <dt class="col-sm-5 fw-medium text-dark">MNC Number</dt>
+                            <dt class="col-sm-5 fw-medium text-dark">NMC Number</dt>
                             <dd class="col-sm-7 text-dark">{{ $report->mnc_number ?? 'N/A' }}</dd>
 
                             <dt class="col-sm-5 fw-medium text-dark">Blood Pressure</dt>

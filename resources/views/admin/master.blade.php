@@ -4,12 +4,12 @@
 <head>
 
     <meta charset="utf-8" />
-    <title>Starter Page | Minia - Minimal Admin & Dashboard Template</title>
+    <title>Hamro Health</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesbrand" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="shortcut icon" href="/logo.ico">
 
     <!-- Bootstrap Css -->
     <link href="/assets/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
@@ -281,7 +281,8 @@
                          @role('school_admin')
                             <li>
                                 <a href="{{ route('chat.index') }}">
-                                    <i data-feather="user"></i>
+                                  <i data-feather="message-circle"></i>
+
 
                                     <span data-key="t-dashboard">Chatting</span>
                                 </a>

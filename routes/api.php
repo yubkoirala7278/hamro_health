@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\ChatApiController;
+use App\Http\Controllers\Api\StudentApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,4 +27,14 @@ Route::middleware(['auth:sanctum'])->prefix('chat')->group(function () {
     Route::get('conversations', [ChatApiController::class, 'getConversations']);
     Route::get('conversations/{conversationId}/messages', [ChatApiController::class, 'getMessages']);
     Route::post('conversations/{conversationId}/messages', [ChatApiController::class, 'sendMessage']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Student API routes
+    Route::prefix('student')->group(function () {
+        Route::get('medical-reports', [StudentApiController::class, 'getMedicalReports']);
+        Route::get('profile', [StudentApiController::class, 'getProfile']);
+        Route::get('recent-updates', [StudentApiController::class, 'getRecentUpdates']);
+        Route::get('clinic-visits', [StudentApiController::class, 'getClinicVisits']);
+    });
 });
